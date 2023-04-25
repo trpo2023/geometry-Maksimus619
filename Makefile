@@ -1,4 +1,4 @@
-Hello : Hello.c
-	gcc -Wall -Werror -o Hello Hello.c
+geometry3 : geometry3.c
+	gcc -Wall -Werror -o geometry3 geometry3.c
 run :
-	./Hello
+	./geometry3
