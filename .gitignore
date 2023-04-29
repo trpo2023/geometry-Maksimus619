@@ -1,4 +1,3 @@
-geometry3
-*.[oa]
-*~
-*swp
+*main
+*.clang-format
+*fig.txt

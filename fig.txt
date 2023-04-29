@@ -1,4 +1,0 @@
-circle    3        6,       1.4)
-circle 2    8     1.5)
-circle(5 6, 8.4)
-circle(4 8, 3
