@@ -1,29 +1,47 @@
-TARGET = ./bin/MyProject
-CC = gcc
+APP_NAME = geometry
+LIB_NAME = libgeometry
 
-CFLAGS = -Wall -Werror 
-PATH_INCLUDE = -Isrc/libgeometry
+CFLAGS = -Wall -Wextra -Werror
+CPPFLAGS = -I src -MP -MMD
+LDFLAGS =
+LDLIBS =
 
-PREF_SRCMAIN = ./src/geometry/
-PREF_OBJMAIN = ./obj/src/geometry/
+BIN_DIR = bin
+OBJ_DIR = obj
+SRC_DIR = src
 
-PREF_SRC = ./src/libgeometry/
-PREF_OBJ = ./obj/src/libgeometry/
+APP_PATH = $(BIN_DIR)/$(APP_NAME)
+LIB_PATH = $(OBJ_DIR)/$(SRC_DIR)/$(LIB_NAME)/$(LIB_NAME).a
 
-SRC = $(wildcard $(PREF_SRC)*.c)
-OBJ = $(patsubst $(PREF_SRC)%.c, $(PREF_OBJ)%.o, $(SRC))
+SRC_EXT = c
 
-SRCMAIN = $(wildcard $(PREF_SRCMAIN)*.c)
-OBJMAIN = $(patsubst $(PREF_SRCMAIN)%.c, $(PREF_OBJMAIN)%.o, $(SRCMAIN))
+APP_SOURCES = $(shell find $(SRC_DIR)/$(APP_NAME) -name '*.$(SRC_EXT)')
+APP_OBJECTS = $(APP_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
-$(PREF_OBJ)%.o : $(PREF_SRC)%.c
-	$(CC) -c $(CFLAGS) $(PATH_INCLUDE) -o $@ $<
+LIB_SOURCES = $(shell find $(SRC_DIR)/$(LIB_NAME) -name '*.$(SRC_EXT)')
+LIB_OBJECTS = $(LIB_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
-$(PREF_OBJMAIN)%.o : $(PREF_SRCMAIN)%.c
-	        $(CC) -c $(CFLAGS) $(PATH_INCLUDE) -o $@ $<
+DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 
-$(TARGET) : $(OBJMAIN) $(OBJ) 
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJMAIN) $(OBJ)
+.PHONY: all
+all: $(APP_PATH)
 
-clean :
-	rm $(TARGET) $(PREF_OBJ)*.o $(PREF_OBJMAIN)*.o
+-include $(DEPS)
+
+$(APP_PATH): $(APP_OBJECTS) $(LIB_PATH)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+
+$(LIB_PATH): $(LIB_OBJECTS)
+	ar rcs $@ $^
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+.PHONY: run
+run:
+	./$(BIN_DIR)/$(APP_NAME)
+
+.PHONY: clean
+clean:
+	$(RM) $(APP_PATH) $(LIB_PATH)
+	find $(OBJ_DIR) -name '*.o' -exec $(RM) '{}' \;
+	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
